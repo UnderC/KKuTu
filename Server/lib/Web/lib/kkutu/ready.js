@@ -887,7 +887,7 @@ $(document).ready(function(){
 			var my = $data.users[$data.id];
 			
 			if(res.error) return fail(res.error);
-			inAlert(false, 100, L['purchased'], L['ok']);
+			inAlert(false, 120, L['purchased'], L['ok']);
 			my.money = res.money;
 			my.box = res.box;
 			updateMe();

@@ -1327,7 +1327,7 @@ function drawMyGoods(avGroup){
 		
 		if(e.ctrlKey){
 			if($target.hasClass("dress-equipped")) return fail(426);
-			inAlert(true, 100, L['surePayback'] + commify(Math.round((item.cost || 0) * 0.2)) + L['ping'], L['ok'], L['no'], function(res) {
+			inAlert(true, 120, L['surePayback'] + commify(Math.round((item.cost || 0) * 0.2)) + L['ping'], L['ok'], L['no'], function(res) {
 				if(res === 'no') return;
 				$.post("/payback/" + id, function(res){
 					if(res.error) return fail(res.error);
