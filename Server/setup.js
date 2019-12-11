@@ -22,6 +22,7 @@ const FS = require("fs");
 let step = [
 	() => { console.log("Please wait... This may take several minutes."); doStep() },
 	() => summon("npm install"),
+	() => summon(`npm install ./lib --prefix "./lib"`),
 	() => removeCmd("acorn"),
 	() => removeCmd("cake"),
 	() => removeCmd("coffee"),
@@ -53,7 +54,7 @@ function summon(cmd){
 	proc.on('close', doStep);
 }
 function removeCmd(cmd){
-	let f1 = `./${cmd}`, f2 = `./${cmd}.cmd`;
+	let f1 = `./lib/${cmd}`, f2 = `./lib/${cmd}.cmd`;
 
 	FS.unlink(f1, () => FS.unlink(f2, doStep));
 }
