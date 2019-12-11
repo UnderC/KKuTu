@@ -129,7 +129,12 @@ $(document).ready(function(){
 			chatLog: $("#ChatLogDiag"),
 			obtain: $("#ObtainDiag"),
 				obtainOK: $("#obtain-ok"),
-			help: $("#HelpDiag")
+			help: $("#HelpDiag"),
+			alert: $("#AlertDiag"),
+				alertTitle: $($($("#AlertDiag").children()[0]).children()[0]),
+				alertText: $('#AlertText'),
+				alertOK: $("#alert-ok"),
+				alertNo: $("#alert-no")
 		},
 		box: {
 			chat: $(".ChatBox"),
@@ -574,10 +579,12 @@ $(document).ready(function(){
 	});
 	$stage.menu.exit.on('click', function(e){
 		if($data.room.gaming){
-			if(!confirm(L['sureExit'])) return;
-			clearGame();
-		}
-		send('leave');
+			inAlert(true, 100, L['sureExit'], L['ok'], L['no'], function(res) {
+				if(res === 'no') return
+				clearGame();
+				send('leave');
+			});
+		} else send('leave');
 	});
 	$stage.menu.replay.on('click', function(e){
 		if($data._replay){
@@ -757,8 +764,9 @@ $(document).ready(function(){
 		tryJoin($data._roominfo);
 	});
 	$stage.dialog.profileHandover.on('click', function(e){
-		if(!confirm(L['sureHandover'])) return;
-		send('handover', { target: $data._profiled });
+		inAlert(true, 100, L['sureHandover'], L['ok'], L['no'], function(res) {
+			if (res === 'yes') send('handover', { target: $data._profiled });
+		});
 	});
 	$stage.dialog.profileKick.on('click', function(e){
 		send('kick', { robot: $data.robots.hasOwnProperty($data._profiled), target: $data._profiled });
@@ -809,21 +817,22 @@ $(document).ready(function(){
 	});
 	$stage.dialog.cfCompose.on('click', function(e){
 		if(!$stage.dialog.cfCompose.hasClass("cf-composable")) return fail(436);
-		if(!confirm(L['cfSureCompose'])) return;
-		
-		$.post("/cf", { tray: $data._tray.join('|') }, function(res){
-			var i;
-			
-			if(res.error) return fail(res.error);
-			send('refresh');
-			alert(L['cfComposed']);
-			$data.users[$data.id].money = res.money;
-			$data.box = res.box;
-			for(i in res.gain) queueObtain(res.gain[i]);
-			
-			drawMyDress($data._avGroup);
-			updateMe();
-			drawCharFactory();
+		inAlert(true, 100, L['cfSureCompose'], L['ok'], L['no'], function(res) {
+			if (res === 'no') return
+			$.post("/cf", { tray: $data._tray.join('|') }, function(res){
+				var i;
+				
+				if(res.error) return fail(res.error);
+				send('refresh');
+				inAlert(false, 100, L['cfComposed'], L['ok']);
+				$data.users[$data.id].money = res.money;
+				$data.box = res.box;
+				for(i in res.gain) queueObtain(res.gain[i]);
+				
+				drawMyDress($data._avGroup);
+				updateMe();
+				drawCharFactory();
+			});
 		});
 	});
 	$("#room-injeong-pick").on('click', function(e){
@@ -878,7 +887,7 @@ $(document).ready(function(){
 			var my = $data.users[$data.id];
 			
 			if(res.error) return fail(res.error);
-			alert(L['purchased']);
+			inAlert(false, 100, L['purchased'], L['ok']);
 			my.money = res.money;
 			my.box = res.box;
 			updateMe();
@@ -937,7 +946,7 @@ $(document).ready(function(){
 				$stage.dialog.replayView.attr('disabled', false);
 			}catch(ex){
 				console.warn(ex);
-				return alert(L['replayError']);
+				return inAlert(false, 100, L['replayError'], L['ok']);
 			}
 		};
 	});
@@ -981,13 +990,13 @@ $(document).ready(function(){
 			
 			if(rws) rws.close();
 			stopAllSounds();
-			alert(ct);
+			inAlert(false, 100, ct, L['ok']);
 			$.get("/kkutu_notice.html", function(res){
 				loading(res);
 			});
 		};
 		ws.onerror = function(e){
-			console.warn(L['error'], e);
+			console.warn(L[100], e);
 		};
 	}
 });
