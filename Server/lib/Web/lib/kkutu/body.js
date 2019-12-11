@@ -492,7 +492,8 @@ function onMessage(data){
 				document.onkeyup = undefined;
 			}
 			break;
-		case 100:
+		case 'error':
+			console.log(data)
 			i = data.message || "";
 			if(data.code == 401){
 				/* 로그인

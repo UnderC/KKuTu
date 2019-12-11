@@ -390,6 +390,12 @@ block Middle
 			button#obtain-ok= L('OK')
 	+Dialog('HelpDiag', 550, 400, L('helpText'))
 		iframe#help-board(width=550, height=375)
+	+Dialog('AlertDiag', 300, 150, '　')
+		div.dialog-bar
+			h4#AlertText(style='width: 100%;')= '　'
+		div.dialog-bar.tail-button
+			button#alert-ok= L('ok')
+			button#alert-no= L('no')
 	+Product('UserList')
 		div 불러오는 중
 	+Product('RoomList')
