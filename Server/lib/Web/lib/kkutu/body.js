@@ -2915,7 +2915,7 @@ function setLocation(place){
 	else location.hash = "";
 }
 function fail(code){
-	return inAlert(false, 120, L['error_' + code], L['ok']);
+	inAlert(false, 120, L['error_' + code], L['ok']);
 }
 function yell(msg){
 	$stage.yell.show().css('opacity', 1).html(msg);
