@@ -1,5 +1,3 @@
-cd ./Server
+cd ./Server/lib
 node setup
-cd ./lib
-echo npm start > ../run.bat
 grunt default pack
