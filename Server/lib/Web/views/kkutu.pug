@@ -349,8 +349,10 @@ block Middle
 			h4.dialog-bar-value#replay-players -
 		div.dialog-bar.tail-button
 			button#replay-view= L('replayView')
-	+Dialog('DressDiag', 600, 280, L('dress'))
+	+Dialog('DressDiag', 600, 300, L('dress'))
 		div.dialog-bar
+			h4(style='width: 150px;')= L('myNickname')
+			input#dress-nickname(type='textfield', placeholder=L('myNicknameX'), style='width: 435px;', maxlength=100)
 			h4(style='width: 150px;')= L('myExordial')
 			input#dress-exordial(type='textfield', placeholder=L('myExordialX'), style='width: 435px;', maxlength=100)
 		div.dialog-bar(style='width: 150px;')
@@ -390,6 +392,12 @@ block Middle
 			button#obtain-ok= L('OK')
 	+Dialog('HelpDiag', 550, 400, L('helpText'))
 		iframe#help-board(width=550, height=375)
+	+Dialog('AlertDiag', 300, 150, '　')
+		div.dialog-bar
+			h4#AlertText(style='width: 100%;')= '　'
+		div.dialog-bar.tail-button
+			button#alert-ok= L('ok')
+			button#alert-no= L('no')
 	+Product('UserList')
 		div 불러오는 중
 	+Product('RoomList')

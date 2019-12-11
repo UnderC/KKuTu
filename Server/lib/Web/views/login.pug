@@ -31,7 +31,14 @@ html
 		div.login-with= locals.text ? L(locals.text) : L('loginWith')
 		//볕뉘 수정
 		each val in loginList
-			a(href="/login/" + val.vendor)
-				button(style="color: " + val.fontColor + "; background-color: " + val.color + ";")= L(val.displayName)
+			if val.vendor != "local"
+				a(href="/login/" + val.vendor)
+					button(style="color: " + val.fontColor + "; background-color: " + val.color + ";")= L(val.displayName)
+			else
+				form(action="/login/" + val.vendor + "/callback" method="GET" style="width: 210px; margin: 0 auto;")
+					input(type="text" id="userid" name="userid" placeholder= L("UserID") style="width: 200px;")
+					input(type="password" id="userpw" name="userpw" placeholder= L("UserPW") style="width: 200px;")
+					button(type="submit" style="color: " + val.fontColor + "; background-color: " + val.color + "; margin: 0")= L(val.displayName)
+
 		//볕뉘 수정 끝
 		div.login-legal!= L('loginLegal')

@@ -42,5 +42,9 @@
         "clientID": "",
 		"clientSecret": "",
         "callbackURL": "/login/spotify/callback"
+    }, "local": {
+        "usernameField" : "userid",
+        "passwordField" : "userpw",
+        "callbackURL": "/login/local/callback"
     }
 }
