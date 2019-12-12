@@ -126,8 +126,7 @@
 			$.post('/register', {
 				email: inputs.email.val(),
 				id: inputs.id.val(),
-				pw: inputs.pw.val(),
-				nick: inputs.nick.val()
+				pw: inputs.pw.val()
 			}, function(res) {
 				if (res.err) return console.log(res.err);
 				else window.location = '/login'
