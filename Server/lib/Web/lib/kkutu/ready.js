@@ -621,8 +621,8 @@ $(document).ready(function(){
 	});
 	$stage.dialog.settingOK.on('click', function(e){
 		applyOptions({
-			mb: $("#mute-bgm").is(":checked"),
-			me: $("#mute-effect").is(":checked"),
+			vb: $("#vol-bgm").val(),
+			ve: $("#vol-eff").val(),
 			di: $("#deny-invite").is(":checked"),
 			dw: $("#deny-whisper").is(":checked"),
 			df: $("#deny-friend").is(":checked"),
@@ -943,6 +943,10 @@ $(document).ready(function(){
 	});
 	$stage.dialog.replayView.on('click', function(e){
 		replayReady();
+	});
+
+	$('#vol-bgm').on('input', function() {
+		$data.bgm.gN.gain.value = $('#vol-bgm').val();
 	});
 	
 // 스팸
