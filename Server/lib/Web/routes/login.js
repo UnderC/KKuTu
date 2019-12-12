@@ -114,7 +114,7 @@ exports.run = (Server, page) => {
 		if(req.session.profile){
 			return res.send({ err: 'loggined' });
 		} else {
-			MainDB.users.upsert([ '_id', req.body.id ]).set([ 'kkutu', { email: req.body.email, nickname: req.body.nickname } ], [ 'box', {} ], [ 'equip', {} ], [ 'password', req.body.pw ], [ 'friends', {} ]).on(function($res) {
+			MainDB.users.upsert([ '_id', req.body.id ]).set([ 'kkutu', { email: req.body.email, nickname: req.body.nick } ], [ 'box', {} ], [ 'equip', {} ], [ 'password', req.body.pw ], [ 'friends', {} ]).on(function($res) {
 				return res.send({ ok: true });
 			});
 		}
