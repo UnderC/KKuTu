@@ -16,25 +16,42 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * 볕뉘 수정사항:
- * Login 을 Passport 로 수행하기 위한 수정
- */
-
-(function(){
-	$(document).ready(function(){
-		//볕뉘 수정 구문삭제(21~105)
-		$('#uShow').on('click', function() {
-			$('#uShow').hide();
-			$('#uForm').show();
-		});
-
-		$('#uReg').on('click', function() {
-			window.location = '/register';
-		});
-
-		$('#uLog').on('click', function() {
-			$('form')[0].submit();
-		});
-	});
-})();
+body{
+	background-color: #232323;
+}
+.middle {
+	width: 500px;
+	margin: 20px auto;
+}
+.middle > * {
+	text-align: center;
+}
+input {
+	width: 387px;
+	float: left;
+}
+label {
+	width: 100px;
+	height: 25px;
+	float: left;
+}
+.g {
+	height: 26px;
+	margin-top: 10px;
+}
+.TnBGroup {
+	width: 100%;
+}
+.TnBGroup > input {
+	width: 300px;
+}
+.TnBGroup > button {
+	width: 75px;
+	float: right;
+}
+#register {
+	margin-top: 10px;
+	width: 200px;
+	height: 30px;
+	float: right;
+}
