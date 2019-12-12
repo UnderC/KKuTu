@@ -131,12 +131,12 @@ Server.post("/enn", function(req, res){
 		MainDB.users.findOne([ '_id', req.session.profile.id ]).on(function($user){
 			if (nickname === '') return res.send({ error: 602 });
 			else if($user.kkutu.nickname !== nickname) {
-				MainDB.users.raw(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`).then($dupl => {
+				MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`, $dupl => {
 					if($dupl.rows[0]) return res.send({ error: 601 });
 				})
 				$user.kkutu.nickname= req.session.profile.title = nickname
-				MainDB.session.raw(`UPDATE session SET profile = jsonb_set(CAST(profile AS JSONB), '{title}', '"${nickname}"') WHERE _id = '${req.session.id}'`)
-				MainDB.users.raw(`UPDATE users SET kkutu = jsonb_set(CAST(kkutu AS JSONB), '{nickname}', '"${nickname}"') WHERE _id = '${$user._id}'`)			
+				MainDB.session.direct(`UPDATE session SET profile = jsonb_set(CAST(profile AS JSONB), '{title}', '"${nickname}"') WHERE _id = '${req.session.id}'`)
+				MainDB.users.direct(`UPDATE users SET kkutu = jsonb_set(CAST(kkutu AS JSONB), '{nickname}', '"${nickname}"') WHERE _id = '${$user._id}'`)			
 			}
 
 			if ($user.exordial !== exordial) MainDB.users.update([ '_id', $user._id ]).set([ 'exordial', exordial ]).on();
