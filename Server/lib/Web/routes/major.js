@@ -131,7 +131,8 @@ Server.post("/enn", function(req, res){
 		MainDB.users.findOne([ '_id', req.session.profile.id ]).on(function($user){
 			if (nickname === '') return res.send({ error: 602 });
 			else if($user.kkutu.nickname !== nickname) {
-				MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`, $dupl => {
+				MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`, (err, $dupl) => {
+					if(err) return res.send({ error: 1 })
 					if($dupl.rows[0]) return res.send({ error: 601 });
 				})
 				$user.kkutu.nickname= req.session.profile.title = nickname
