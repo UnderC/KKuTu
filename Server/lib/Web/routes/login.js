@@ -34,7 +34,7 @@ function process(req, accessToken, MainDB, $p, done) {
     req.session.admin = GLOBAL.ADMIN.includes($p.id);
 		req.session.authType = $p.authType;
 		MainDB.users.findOne([ '_id', $p.id ]).on(($body) => {
-			if($body.kkutu.nickname) $p.name = $p.title = $body.kkutu.nickname;
+			if($body && $body.kkutu.nickname) $p.name = $p.title = $body.kkutu.nickname;
 			req.session.profile = $p;
 			MainDB.users.update([ '_id', $p.id ]).set([ 'lastLogin', now ]).on();
 			MainDB.session.upsert([ '_id', req.session.id ]).set({
