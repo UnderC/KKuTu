@@ -136,15 +136,15 @@ Server.post("/enn", function(req, res){
 				})
 				$user.kkutu.nickname= req.session.profile.title = nickname
 				MainDB.session.raw(`UPDATE session SET profile = jsonb_set(CAST(profile AS JSONB), '{title}', '"${nickname}"') WHERE _id = '${req.session.id}'`)
-				MainDB.users.raw(`UPDATE users SET kkutu = jsonb_set(CAST(kkutu AS JSONB), '{nickname}', '"${nickname}"') WHERE _id = '${$user._id}'`)
+				MainDB.users.raw(`UPDATE users SET kkutu = jsonb_set(CAST(kkutu AS JSONB), '{nickname}', '"${nickname}"') WHERE _id = '${$user._id}'`)			
 			}
 
-			if ($user.exordial !== exordial) {
-				MainDB.users.update([ '_id', $user._id ]).set([ 'exordial', exordial ]).on();
-			}
+			if ($user.exordial !== exordial) MainDB.users.update([ '_id', $user._id ]).set([ 'exordial', exordial ]).on();
+
+			if ($user.kkutu.nickname !== nickname) {
+				return res.send({nickname: nickname})
+			} else return res.send({ok: true})
 		});
-
-		res.send({ ok: 777 });
 	} else res.send({ error: 400 });
 });
 Server.post("/buy/:id", function(req, res){

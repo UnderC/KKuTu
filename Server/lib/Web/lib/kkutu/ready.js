@@ -790,6 +790,7 @@ $(document).ready(function(){
 		$.post("/enn", { exor: $("#dress-exordial").val(), nick: $("#dress-nickname").val() }, function(res){
 			$stage.dialog.dressOK.attr('disabled', false);
 			if(res.error) return fail(res.error);
+			else if(res.nickname) window.location.reload();
 
 			$stage.dialog.dress.hide();
 		});
