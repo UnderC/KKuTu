@@ -124,6 +124,7 @@ Server.get("/shop", function(req, res){
 Server.post("/enn", function(req, res){
 	var exordial = req.body.exor || "";
 	var nickname = req.body.nick || "";
+	var some = false
 	
 	if(req.session.profile){
 		exordial = exordial.slice(0, 100);
@@ -132,19 +133,25 @@ Server.post("/enn", function(req, res){
 			if (nickname === '') return res.send({ error: 602 });
 			else if($user.kkutu.nickname !== nickname) {
 				MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`, (err, $dupl) => {
-					if(err) return res.send({ error: 1 })
-					if($dupl.rows[0]) return res.send({ error: 601 });
+					if(err) {
+						some = true;
+						return res.send({ error: 1 });
+					} else if($dupl.rows[0]) {
+						some = true;
+						return res.send({ error: 601 });
+					}
 				})
-				$user.kkutu.nickname= req.session.profile.title = nickname
-				MainDB.session.direct(`UPDATE session SET profile = jsonb_set(CAST(profile AS JSONB), '{title}', '"${nickname}"') WHERE _id = '${req.session.id}'`)
-				MainDB.users.direct(`UPDATE users SET kkutu = jsonb_set(CAST(kkutu AS JSONB), '{nickname}', '"${nickname}"') WHERE _id = '${$user._id}'`)			
+				$user.kkutu.nickname= req.session.profile.title = nickname;
+				MainDB.session.direct(`UPDATE session SET profile = jsonb_set(CAST(profile AS JSONB), '{title}', '"${nickname}"') WHERE _id = '${req.session.id}'`);
+				MainDB.users.direct(`UPDATE users SET kkutu = jsonb_set(CAST(kkutu AS JSONB), '{nickname}', '"${nickname}"') WHERE _id = '${$user._id}'`);
 			}
 
+			if (some) return
 			if ($user.exordial !== exordial) MainDB.users.update([ '_id', $user._id ]).set([ 'exordial', exordial ]).on();
 
 			if ($user.kkutu.nickname !== nickname) {
-				return res.send({nickname: nickname})
-			} else return res.send({ok: true})
+				return res.send({nickname: nickname});
+			} else return res.send({ok: true});
 		});
 	} else res.send({ error: 400 });
 });
