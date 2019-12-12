@@ -101,6 +101,46 @@ exports.run = (Server, page) => {
 		}
 	});
 
+	Server.get("/register", (req, res) => {
+		if(req.session.profile){
+			return res.redirect("/");
+		} else {
+			page(req, res, "register");
+		}
+	});
+
+	Server.post("/register", (req, res) => {
+		if(req.session.profile){
+			return res.send({ err: 'loggined' });
+		} else {
+			MainDB.users.upsert([ '_id', req.body.id ]).set([ 'kkutu', { email: req.body.email, nickname: req.body.nickname } ], [ 'box', {} ], [ 'equip', {} ], [ 'password', req.body.pw ], [ 'friends', {} ]).on(function($res) {
+				return res.send({ ok: true });
+			});
+		}
+	});
+
+	Server.post("/getDupl", (req, res) => {
+		if (req.body.id) {
+			MainDB.users.findOne([ '_id', req.body.id ]).on($user => {
+				if ($user) return res.send({ exist: true })
+				return res.send({ exist: false })
+			})
+		} else if (req.body.email) {
+			MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'email' = '${req.body.email}'`, (err, $user) => {
+				if (err) return res.send({ err: err })
+				if ($user.rows[0]) return res.send({ exist: true })
+				return res.send({ exist: false })
+			})
+		} else if (req.body.nick) {
+			const nickname = req.body.nick.split(' ').join('_').replace(/[^ㄱ-힣a-z0-9_]/ig, '').slice(0, 20);
+			MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`, (err, $user) => {
+				if (err) return res.send({ err: err })
+				if ($user.rows[0]) return res.send({ exist: true })
+				return res.send({ exist: false })
+			})
+		}
+	});
+
 	Server.get("/logout", (req, res) => {
 		if(!req.session.profile){
 			return res.redirect("/");

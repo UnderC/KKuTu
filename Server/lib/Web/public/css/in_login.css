@@ -28,6 +28,22 @@ button{
 	box-shadow: 0px 2px 2px #141414;
 }
 #with-google span{ display: block; }
+#uForm {
+	width: 210px;
+	margin: 0 auto;
+}
+input.log { width: 200px; }
+button.log {
+	width: 95px;
+	float: left;
+	margin: 0 auto;
+}
+button.log:last-child {
+	float: none;
+}
+form.log {
+	width: 100%;
+}
 .login-with{
 	padding-top: 30px;
 	margin: 30px 0px;
