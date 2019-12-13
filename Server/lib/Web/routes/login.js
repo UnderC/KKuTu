@@ -48,7 +48,7 @@ function process(req, accessToken, MainDB, $p, done) {
 }
 
 function genTok(len) {
-		const chars = '!@$%^*()_+1234567890-qwertyuiop[]{}asdfghjklzxcvbnm,./<>';
+		const chars = '!@$%^*()_+1234567890-qwertyuiop[]{}asdfghjklzxcvbnm,./';
 		let result = ''
 		for (i = 0; i < len; i++) result += chars[Math.floor(Math.random() * chars.length)]
 		return result
@@ -158,6 +158,13 @@ exports.run = (Server, page) => {
 			})
 		} else if (req.body.email) {
 			MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'email' = '${req.body.email}'`, (err, $user) => {
+				if (err) return res.send({ err: err })
+				if ($user.rows[0]) return res.send({ exist: true })
+				return res.send({ exist: false })
+			})
+		} else if (req.body.nick) {
+			const nickname = req.body.nick.split(' ').join('_').replace(/[^ㄱ-힣a-z0-9_]/ig, '').slice(0, 20);
+			MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`, (err, $user) => {
 				if (err) return res.send({ err: err })
 				if ($user.rows[0]) return res.send({ exist: true })
 				return res.send({ exist: false })
