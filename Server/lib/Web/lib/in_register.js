@@ -45,6 +45,8 @@
 				idCheck: $("#idCheck"),
 			pw: $("#uPW"),
 				repw: $("#urePW"),
+			nick: $("#uNick"),
+				nickCheck: $("#nickCheck"),
 			submit: $("#register")
 		}
 
@@ -52,12 +54,14 @@
 			email: "이메일은 아이디 · 비밀번호 찾기에 사용됩니다.",
 			id: "로그인에 사용될 아이디입니다.",
 			pw: "로그인에 사용될 비밀번호입니다.",
+			nick: "게임 내부에서 사용될 닉네임 입니다."
 		}
 
 		const flags = {
 			email: 0,
 			id: 1,
 			pw: 2,
+			nick: 3
 		}
 
 		const state = new states()
@@ -94,6 +98,7 @@
 		inputs.repw.keyup(pwCR);
 		inputs.email.keyup(detecChange('email'));
 		inputs.id.keyup(detecChange('id'));
+		inputs.nick.keyup(detecChange('nick'));
 
 		inputs.emailCheck.on('click', function() {
 			$.post('/getDupl', { email: inputs.email.val() }, function(res) {
@@ -121,12 +126,26 @@
 			});
 		});
 
+		inputs.nickCheck.on('click', function() {
+			$.post('/getDupl', { nick: inputs.nick.val() }, function(res) {
+				if (res.err) return console.log(res.err);
+				if (res.exist) {
+					state.set(false, flags.nick);
+					return desc.nick.html('<font color="red">사용 할 수 없는 닉네임 입니다.</font>');
+				} else {
+					state.set(true, flags.nick);
+					return desc.nick.html('<font color="green">사용 가능한 닉네임 입니다.</font>');
+				}
+			});
+		});
+
 		inputs.submit.on('click', function() {
 			if (!state.all()) return
 			$.post('/register', {
 				email: inputs.email.val(),
 				id: inputs.id.val(),
-				pw: inputs.pw.val()
+				pw: inputs.pw.val(),
+				nick: inputs.nick.val()
 			}, function(res) {
 				if (res.err) return console.log(res.err);
 				else {
