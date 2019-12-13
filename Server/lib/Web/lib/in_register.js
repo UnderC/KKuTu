@@ -73,6 +73,7 @@
 			email: $("#email"),
 			id: $("#id"),
 			pw: $("#password"),
+			nick: $("#nickname")
 		}
 
 		function pwCR() {
