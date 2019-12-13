@@ -47,7 +47,7 @@ function process(req, accessToken, MainDB, $p, done) {
 }
 
 function genTok(len) {
-		const chars = '!@$%^*()_+1234567890-qwertyuiop[]{}asdfghjklzxcvbnm,./<>';
+		const chars = '!@$%^*()_+1234567890-qwertyuiop[]{}asdfghjklzxcvbnm,./';
 		let result = ''
 		for (i = 0; i < len; i++) result += chars[Math.floor(Math.random() * chars.length)]
 		return result
