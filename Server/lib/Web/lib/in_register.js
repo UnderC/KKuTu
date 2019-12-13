@@ -129,7 +129,10 @@
 				pw: inputs.pw.val()
 			}, function(res) {
 				if (res.err) return console.log(res.err);
-				else window.location = '/login'
+				else {
+					alert('이메일을 확인해 주세요.');
+					window.location = '/login';
+				}
 			});
 		});
 	});
