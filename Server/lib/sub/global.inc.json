@@ -20,7 +20,7 @@
 		"isPFX": false,
 		"isCA": false
 	},
-
+  
 	"MAIL": {
 		"SVC": "mail service [ex) gmail]",
 		"ID": "Your email here",
@@ -31,5 +31,9 @@
 			"subject": "KKuTu Email Verification",
 			"text": "KKuTu 계정을 이용하기 전 아래의 계정 활성화 과정을 거쳐야 합니다.\n\n1. 아래의 링크를 눌러 계정을 활성화 합니다.\nhttp://[domain]/verify?token=[token]\n2. 로그인이 되어있다면 로그아웃 후 다시 로그인을 합니다.\n3. 게임을 즐깁니다."
 		}
-	}, "DOMAIN": "Your ip address or domain Here"
+	}, "DOMAIN": "Your ip address or domain Here",
+
+	"web-num-cpu": 1,
+	"game-num-cpu": 1,
+	"game-num-inst": 1
 }
