@@ -162,6 +162,13 @@ exports.run = (Server, page) => {
 				if ($user.rows[0]) return res.send({ exist: true })
 				return res.send({ exist: false })
 			})
+		} else if (req.body.nick) {
+			const nickname = req.body.nick.split(' ').join('_').replace(/[^ㄱ-힣a-z0-9_]/ig, '').slice(0, 20);
+			MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`, (err, $user) => {
+				if (err) return res.send({ err: err })
+				if ($user.rows[0]) return res.send({ exist: true })
+				return res.send({ exist: false })
+			})
 		}
 	});
 
