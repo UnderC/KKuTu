@@ -24,6 +24,7 @@ const glob = require('glob-promise');
 const GLOBAL	 = require("../../sub/global.json");
 const config = require('../../sub/auth.json');
 const path = require('path')
+const mailer = require('../../sub/mailer');
 
 function process(req, accessToken, MainDB, $p, done) {
     $p.token = accessToken;
@@ -43,6 +44,13 @@ function process(req, accessToken, MainDB, $p, done) {
     });
 
     done(null, $p);
+}
+
+function genTok(len) {
+		const chars = '!@#$%^*()_+1234567890-qwertyuiop[]{}asdfghjklzxcvbnm,./<>';
+		let result = ''
+		for (i = 0; i < len; i++) result += chars[Math.floor(Math.random() * chars.length)]
+		return result
 }
 
 exports.run = (Server, page) => {
@@ -111,12 +119,34 @@ exports.run = (Server, page) => {
 
 	Server.post("/register", (req, res) => {
 		if(req.session.profile){
-			return res.send({ err: 'loggined' });
+			return res.send({ err: 'logged_in' });
 		} else {
-			MainDB.users.upsert([ '_id', req.body.id ]).set([ 'kkutu', { email: req.body.email, nickname: req.body.nick } ], [ 'box', {} ], [ 'equip', {} ], [ 'password', req.body.pw ], [ 'friends', {} ]).on(function($res) {
+			const token = genTok(20);
+			MainDB.users.upsert([ '_id', req.body.id ]).set(
+				[ 'kkutu', { email: req.body.email, nickname: req.body.nick, verifyed: false, eToken: token } ],
+				[ 'box', {} ],
+				[ 'equip', {} ],
+				[ 'password', req.body.pw ],
+				[ 'friends', {} ]
+			).on(function($res) {
+				mailer.send(GLOBAL.MAIL.CONTENT, req.body.email, { domain: GLOBAL.DOMAIN, token: token });
 				return res.send({ ok: true });
 			});
 		}
+	});
+
+	Server.get("/verify", (req, res) => {
+		if (!req.query.token) return res.send({ err: 'invalid query' });
+		MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'eToken' = '${req.query.token}'`, function(err, $body) {
+			if (err) return res.send({ err: err });
+			const $user = $body.rows[0];
+			if (!$user) return res.send({ err: 'invalid token' });
+			else if ($user.kkutu.verifyed) return res.send({ err: 'already verifyed email' });
+			
+			MainDB.users.direct(`UPDATE users SET kkutu = jsonb_set(CAST(kkutu AS JSONB), '{verifyed}', 'true') WHERE _id = '${$user._id}'`);
+			if (req.session.profile) res.redirect('/logout');
+			else res.redirect('/login');
+		});
 	});
 
 	Server.post("/getDupl", (req, res) => {
@@ -127,13 +157,6 @@ exports.run = (Server, page) => {
 			})
 		} else if (req.body.email) {
 			MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'email' = '${req.body.email}'`, (err, $user) => {
-				if (err) return res.send({ err: err })
-				if ($user.rows[0]) return res.send({ exist: true })
-				return res.send({ exist: false })
-			})
-		} else if (req.body.nick) {
-			const nickname = req.body.nick.split(' ').join('_').replace(/[^ㄱ-힣a-z0-9_]/ig, '').slice(0, 20);
-			MainDB.users.direct(`SELECT * FROM users WHERE kkutu->>'nickname' = '${nickname}'`, (err, $user) => {
 				if (err) return res.send({ err: err })
 				if ($user.rows[0]) return res.send({ exist: true })
 				return res.send({ exist: false })

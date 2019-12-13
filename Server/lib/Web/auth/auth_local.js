@@ -24,9 +24,12 @@ module.exports.strategy = (process, MainDB, Ajae) => {
             $p.authType = 'local';
             $p.id = profile._id;
             $p.title = $p.name = profile.kkutu.nickname || profile._id;
+            $p.verifyed = profile.kkutu.verifyed;
+            $p.eToken = profile.kkutu.eToken;
+            $p.email = profile.kkutu.email;
             //$p.image = profile.kkutu.image; //comming soon
 
-            process(req, "local!", MainDB, $p, done);
+            process(req, 'local', MainDB, $p, done);
         })
     }
 }
