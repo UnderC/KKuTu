@@ -61,14 +61,19 @@ function showDialog($d, noToggle){
 		return true;
 	}
 }
-function applyOptions(opt){
+function applyOptions(opt, isFirst){
 	$data.opts = opt;
 	
 	$data.volBGM = $data.opts.vb;
 	$data.volEff = $data.opts.ve;
 	
+	const beforeBGM = $data.BGMTheme || 'kkutu';
+	$data.BGMTheme = $data.opts.bt || 'kkutu';
+	const changedBGM = $data.BGMTheme !== beforeBGM;
+	
 	$("#vol-bgm").val($data.volBGM);
 	$("#vol-eff").val($data.volEff);
+	$("#bgm-theme").val($data.BGMTheme);
 	$("#deny-invite").attr('checked', $data.opts.di);
 	$("#deny-whisper").attr('checked', $data.opts.dw);
 	$("#deny-friend").attr('checked', $data.opts.df);
@@ -76,10 +81,14 @@ function applyOptions(opt){
 	$("#sort-user").attr('checked', $data.opts.su);
 	$("#only-waiting").attr('checked', $data.opts.ow);
 	$("#only-unlock").attr('checked', $data.opts.ou);
-	
+
 	if($data.bgm){
 		$data.bgm.gN.gain.value = $data.volBGM;
-		$data.bgm = playBGM($data.bgm.key, true);
+		if (!isFirst && changedBGM) {
+			loadSounds($data._soundList(), function() {
+				playBGM($data.bgm.key, false)
+			});
+		} else $data.bgm = playBGM($data.bgm.key, true);
 	}
 }
 function checkInput(){
@@ -2531,14 +2540,14 @@ function setRoomHead($obj, room){
 		global.expl($obj);
 	}
 }
-function loadSounds(list, callback){
+function loadSounds(list, callback, isFirst){
 	$data._lsRemain = list.length;
 	
 	list.forEach(function(v){
-		getAudio(v.key, v.value, callback);
+		getAudio(v.key, v.value, callback, isFirst);
 	});
 }
-function getAudio(k, url, cb){
+function getAudio(k, url, cb, isFirst){
 	var req = new XMLHttpRequest();
 	
 	req.open("GET", /*($data.PUBLIC ? "http://jjo.kr" : "") +*/ url);
@@ -2556,7 +2565,7 @@ function getAudio(k, url, cb){
 	function done(){
 		if(--$data._lsRemain == 0){
 			if(cb) cb();
-		}else loading(L['loadRemain'] + $data._lsRemain);
+		} else if (isFirst) loading(L['loadRemain'] + $data._lsRemain);
 	}
 	function AudioSound(url){
 		var my = this;
