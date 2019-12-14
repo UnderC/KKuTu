@@ -123,7 +123,7 @@ exports.run = (Server, page) => {
 		} else {
 			const token = genTok(20);
 			MainDB.users.upsert([ '_id', req.body.id ]).set(
-				[ 'kkutu', { email: req.body.email, nickname: req.body.nick, verifyed: false, eToken: token } ],
+				[ 'kkutu', { email: req.body.email, verifyed: false, eToken: token } ],
 				[ 'box', {} ],
 				[ 'equip', {} ],
 				[ 'password', req.body.pw ],
