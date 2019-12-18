@@ -100,11 +100,16 @@ function goURL(url) {
 function applyOptions(opt){
 	$data.opts = opt;
 	
-	$data.muteBGM = $data.opts.mb;
-	$data.muteEff = $data.opts.me;
+	$data.volBGM = $data.opts.vb;
+	$data.volEff = $data.opts.ve;
 	
-	$("#mute-bgm").attr('checked', $data.muteBGM);
-	$("#mute-effect").attr('checked', $data.muteEff);
+	const beforeBGM = $data.BGMTheme || 'kkutu';
+	$data.BGMTheme = $data.opts.bt || 'kkutu';
+	const changedBGM = $data.BGMTheme !== beforeBGM;
+	
+	$("#vol-bgm").val($data.volBGM);
+	$("#vol-eff").val($data.volEff);
+	$("#bgm-theme").val($data.BGMTheme);
 	$("#deny-invite").attr('checked', $data.opts.di);
 	$("#deny-whisper").attr('checked', $data.opts.dw);
 	$("#deny-friend").attr('checked', $data.opts.df);
@@ -112,15 +117,14 @@ function applyOptions(opt){
 	$("#sort-user").attr('checked', $data.opts.su);
 	$("#only-waiting").attr('checked', $data.opts.ow);
 	$("#only-unlock").attr('checked', $data.opts.ou);
-	
+
 	if($data.bgm){
-		if($data.muteBGM){
-			$data.bgm.volume = 0;
-			$data.bgm.stop();
-		}else{
-			$data.bgm.volume = 1;
-			$data.bgm = playBGM($data.bgm.key, true);
-		}
+		$data.bgm.gN.gain.value = $data.volBGM;
+		if (!isFirst && changedBGM) {
+			loadSounds($data._soundList(), function() {
+				playBGM($data.bgm.key, false)
+			});
+		} else $data.bgm = playBGM($data.bgm.key, true);
 	}
 }
 function checkInput(){
@@ -1802,7 +1806,7 @@ function replayPrev(e){
 	to = $data._rf - 1;
 	replayPrevInit();
 	c = $data.muteEff;
-	$data.muteEff = true;
+	$data.volEff = 0;
 	for(i=0; i<to; i++){
 		replayTick();
 	}
@@ -2588,14 +2592,14 @@ function setRoomHead($obj, room){
 		global.expl($obj);
 	}
 }
-function loadSounds(list, callback){
+function loadSounds(list, callback, isFirst){
 	$data._lsRemain = list.length;
 	
 	list.forEach(function(v){
-		getAudio(v.key, v.value, callback);
+		getAudio(v.key, v.value, callback, isFirst);
 	});
 }
-function getAudio(k, url, cb){
+function getAudio(k, url, cb, isFirst){
 	var req = new XMLHttpRequest();
 	
 	req.open("GET", /*($data.PUBLIC ? "http://jjo.kr" : "") +*/ url);
@@ -2613,7 +2617,7 @@ function getAudio(k, url, cb){
 	function done(){
 		if(--$data._lsRemain == 0){
 			if(cb) cb();
-		}else loading(L['loadRemain'] + $data._lsRemain);
+		} else if (isFirst) loading(L['loadRemain'] + $data._lsRemain);
 	}
 	function AudioSound(url){
 		var my = this;
@@ -2631,6 +2635,7 @@ function getAudio(k, url, cb){
 	req.send();
 }
 function playBGM(key, force){
+	if (force) return $data.bgm;
 	if($data.bgm) $data.bgm.stop();
 	
 	return $data.bgm = playSound(key, true);
@@ -2643,10 +2648,15 @@ function stopBGM(){
 }
 function playSound(key, loop){
 	var src, sound;
-	var mute = (loop && $data.muteBGM) || (!loop && $data.muteEff);
+	var mute = (loop && !$data.volBGM) || (!loop && !$data.volEff);
+	var volume = (loop ? $data.volBGM : $data.volEff)
 	
 	sound = $sound[key] || $sound.missing;
 	if(window.hasOwnProperty("AudioBuffer") && sound instanceof AudioBuffer){
+		var gN = audioContext.createGain();
+		gN.gain.value = volume || 0.5;
+		gN.connect(audioContext.destination);
+
 		src = audioContext.createBufferSource();
 		src.startedAt = audioContext.currentTime;
 		src.loop = loop;
@@ -2656,10 +2666,12 @@ function playSound(key, loop){
 			src.buffer = sound;
 		}
 		src.connect(audioContext.destination);
+		src.connect(gN);
+		src.gN = gN;
 	}else{
 		if(sound.readyState) sound.audio.currentTime = 0;
 		sound.audio.loop = loop || false;
-		sound.audio.volume = mute ? 0 : 1;
+		sound.audio.volume = mute ? 0 : volume;
 		src = sound;
 	}
 	if($_sound[key]) $_sound[key].stop();

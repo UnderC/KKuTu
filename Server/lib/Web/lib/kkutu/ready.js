@@ -167,32 +167,32 @@ $(document).ready(function(){
 		alert(L['websocketUnsupport']);
 		return;
 	}
-	$data._soundList = [
-		{ key: "k", value: "/media/kkutu/k.mp3" },
-		{ key: "lobby", value: "/media/kkutu/LobbyBGM.mp3" },
-		{ key: "jaqwi", value: "/media/kkutu/JaqwiBGM.mp3" },
-		{ key: "jaqwiF", value: "/media/kkutu/JaqwiFastBGM.mp3" },
-		{ key: "game_start", value: "/media/kkutu/game_start.mp3" },
-		{ key: "round_start", value: "/media/kkutu/round_start.mp3" },
-		{ key: "fail", value: "/media/kkutu/fail.mp3" },
-		{ key: "timeout", value: "/media/kkutu/timeout.mp3" },
-		{ key: "lvup", value: "/media/kkutu/lvup.mp3" },
-		{ key: "Al", value: "/media/kkutu/Al.mp3" },
-		{ key: "success", value: "/media/kkutu/success.mp3" },
-		{ key: "missing", value: "/media/kkutu/missing.mp3" },
-		{ key: "mission", value: "/media/kkutu/mission.mp3" },
-		{ key: "kung", value: "/media/kkutu/kung.mp3" },
-		{ key: "horr", value: "/media/kkutu/horr.mp3" },
-	];
-	for(i=0; i<=10; i++) $data._soundList.push(
-		{ key: "T"+i, value: "/media/kkutu/T"+i+".mp3" },
-		{ key: "K"+i, value: "/media/kkutu/K"+i+".mp3" },
-		{ key: "As"+i, value: "/media/kkutu/As"+i+".mp3" }
-	);
-	loadSounds($data._soundList, function(){
-		processShop(connect);
-	});
-	delete $data._soundList;
+	$data._soundList = function() {
+		const theme = ($data.opts ? $data.opts.bt : false) || $data.BGMTheme || 'kkutu';
+		const result = [
+			{ key: "k", value: "/media/" + theme + "/k.mp3" },
+			{ key: "lobby", value: "/media/" + theme + "/LobbyBGM.mp3" },
+			{ key: "jaqwi", value: "/media/" + theme + "/JaqwiBGM.mp3" },
+			{ key: "jaqwiF", value: "/media/" + theme + "/JaqwiFastBGM.mp3" },
+			{ key: "game_start", value: "/media/" + theme + "/game_start.mp3" },
+			{ key: "round_start", value: "/media/" + theme + "/round_start.mp3" },
+			{ key: "fail", value: "/media/" + theme + "/fail.mp3" },
+			{ key: "timeout", value: "/media/" + theme + "/timeout.mp3" },
+			{ key: "lvup", value: "/media/" + theme + "/lvup.mp3" },
+			{ key: "Al", value: "/media/" + theme + "/Al.mp3" },
+			{ key: "success", value: "/media/" + theme + "/success.mp3" },
+			{ key: "missing", value: "/media/" + theme + "/missing.mp3" },
+			{ key: "mission", value: "/media/" + theme + "/mission.mp3" },
+			{ key: "kung", value: "/media/" + theme + "/kung.mp3" },
+			{ key: "horr", value: "/media/" + theme + "/horr.mp3" },
+		];
+		for(i=0; i<=10; i++) result.push(
+			{ key: "T"+i, value: "/media/" + theme + "/T"+i+".mp3" },
+			{ key: "K"+i, value: "/media/" + theme + "/K"+i+".mp3" },
+			{ key: "As"+i, value: "/media/" + theme + "/As"+i+".mp3" }
+		);
+		return result;
+	}
 	
 	MOREMI_PART = $("#MOREMI_PART").html().split(',');
 	AVAIL_EQUIP = $("#AVAIL_EQUIP").html().split(',');
@@ -268,8 +268,13 @@ $(document).ready(function(){
 	});
 	$data.opts = $.cookie('kks');
 	if($data.opts){
-		applyOptions(JSON.parse($data.opts));
+		applyOptions(JSON.parse($data.opts), true);
 	}
+
+	loadSounds($data._soundList(), function(){
+		processShop(connect);
+	}, true);
+
 	$(".dialog-head .dialog-title").on('mousedown', function(e){
 		var $pd = $(e.currentTarget).parents(".dialog");
 		
@@ -628,8 +633,9 @@ $(document).ready(function(){
 	});
 	$stage.dialog.settingOK.on('click', function(e){
 		applyOptions({
-			mb: $("#mute-bgm").is(":checked"),
-			me: $("#mute-effect").is(":checked"),
+			vb: $("#vol-bgm").val(),
+			ve: $("#vol-eff").val(),
+			bt: $("#bgm-theme").val(),
 			di: $("#deny-invite").is(":checked"),
 			dw: $("#deny-whisper").is(":checked"),
 			df: $("#deny-friend").is(":checked"),
@@ -953,6 +959,10 @@ $(document).ready(function(){
 	});
 	$stage.dialog.replayView.on('click', function(e){
 		replayReady();
+	});
+
+	$('#vol-bgm').on('input', function() {
+		$data.bgm.gN.gain.value = $('#vol-bgm').val();
 	});
 	
 // 스팸
