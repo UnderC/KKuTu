@@ -60,6 +60,7 @@ const ENABLE_ROUND_TIME = exports.ENABLE_ROUND_TIME = [ 10, 30, 60, 90, 120, 150
 const ENABLE_FORM = exports.ENABLE_FORM = [ "S", "J" ];
 const MODE_LENGTH = exports.MODE_LENGTH = Const.GAME_TYPE.length;
 const PORT = process.env['KKUTU_PORT'];
+const mailer = require('../sub/mailer');
 
 process.on('uncaughtException', function(err){
 	var text = `:${PORT} [${new Date().toLocaleString()}] ERROR: ${err.toString()}\n${err.stack}\n`;
@@ -316,6 +317,14 @@ exports.init = function(_SID, CHAN){
 				if(DIC[$c.id]){
 					DIC[$c.id].sendError(408);
 					DIC[$c.id].socket.close();
+				}
+				if ($body) {
+					if (GLOBAL.MAIL.REQVERIFY && $body.profile.email && !$body.profile.verifyed /*&& $body.profile.eToken*/) {
+						mailer.send(GLOBAL.MAIL.CONTENT, $body.profile.email, { domain: GLOBAL.DOMAIN, token: $body.profile.eToken });
+						$c.sendError(456);
+						$c.socket.close();
+						return;
+					}
 				}
 				if(DEVELOP && !Const.TESTER.includes($c.id)){
 					$c.sendError(500);

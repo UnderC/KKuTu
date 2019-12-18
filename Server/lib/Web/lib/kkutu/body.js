@@ -61,7 +61,43 @@ function showDialog($d, noToggle){
 		return true;
 	}
 }
-function applyOptions(opt, isFirst){
+
+function inAlertEnd(cb, res) {
+	$stage.dialog.alertNo.unbind('click');
+	$stage.dialog.alertOK.unbind('click');
+	$stage.dialog.alert.hide()
+	if (!cb) return
+	return cb(res)
+}
+
+function inAlert(isChoose, h, text, a, b, c) {
+	showDialog($stage.dialog.alert, true);
+	$($($("#AlertDiag").children()[0]).children()[1]).hide();
+	$stage.dialog.alert.height(h)
+	$stage.dialog.alertText.html(text.split('\n').join('<br/>'));
+	$stage.dialog.alertOK.html(a);
+	$stage.dialog.alertOK.one('click', function() {
+		return inAlertEnd(isChoose ? c : b, 'ok');
+	});
+	
+	if (isChoose) {
+		$stage.dialog.alertNo.show();
+		$stage.dialog.alertNo.html(b);
+		$stage.dialog.alertNo.one('click', function() {
+			return inAlertEnd(c, 'no');
+		});
+	} else {
+		$stage.dialog.alertNo.hide();
+	}
+}
+
+function goURL(url) {
+	inAlert(true, 100, L['linkWarning'], L['ok'], L['no'], function(res) {
+		if (res === 'ok') window.open(url)
+	})
+}
+
+function applyOptions(opt){
 	$data.opts = opt;
 	
 	$data.volBGM = $data.opts.vb;
@@ -170,10 +206,10 @@ function connectToRoom(chan, rid){
 		rws = undefined;
 	};
 	rws.onerror = function(e){
-		console.warn(L['error'], e);
+		console.warn(L[100], e);
 	};
 }
-function checkAge(){
+/*function checkAge(){
 	if(!confirm(L['checkAgeAsk'])) return send('caj', { answer: "no" }, true);
 	
 	while(true){
@@ -208,7 +244,7 @@ function checkAge(){
 			if(confirm(L['checkAgeCancel'])) return send('caj', { answer: "no" }, true);
 		}
 	}
-}
+}*/
 function onMessage(data){
 	var i;
 	var $target;
@@ -338,10 +374,12 @@ function onMessage(data){
 		case 'friendAdd':
 			$target = $data.users[data.from].profile;
 			i = ($target.title || $target.name) + "(#" + data.from.substr(0, 5) + ")";
-			send('friendAddRes', {
-				from: data.from,
-				res: $data.opts.df ? false : confirm(i + L['attemptFriendAdd'])
-			}, true);
+			inAlert(true, 100, i + L['attemptFriendAdd'], L['ok'], L['no'], function(res) {
+				send('friendAddRes', {
+					from: data.from,
+					res: $data.opts.df ? false : res === 'ok'
+				}, true);
+			});
 			break;
 		case 'friendAddRes':
 			$target = $data.users[data.target].profile;
@@ -408,9 +446,11 @@ function onMessage(data){
 			notice(getKickText($data._kickTarget.profile, data));
 			break;
 		case 'invited':
-			send('inviteRes', {
-				from: data.from,
-				res: $data.opts.di ? false : confirm(data.from + L['invited'])
+			inAlert(true, 100, data.from + L['invited'], L['ok'], L['no'], function(res) {
+				send('inviteRes', {
+					from: data.from,
+					res: $data.opts.di ? false : res === 'ok'
+				});
 			});
 			break;
 		case 'inviteNo':
@@ -457,6 +497,7 @@ function onMessage(data){
 			}
 			break;
 		case 'error':
+			console.log(data)
 			i = data.message || "";
 			if(data.code == 401){
 				/* 로그인
@@ -473,12 +514,13 @@ function onMessage(data){
 				i = L['server_' + i];
 			}else if(data.code == 416){
 				// 게임 중
-				if(confirm(L['error_'+data.code])){
+				inAlert(true, 100, L['error_'+data.code], L['ok'], L['no'], function(res) {
+					if(res === 'no') return;
 					stopBGM();
 					$data._spectate = true;
 					$data._gaming = true;
 					send('enter', { id: data.target, password: $data._pw, spectate: true }, true);
-				}
+				});
 				return;
 			}else if(data.code == 413){
 				$stage.dialog.room.hide();
@@ -503,7 +545,7 @@ function onMessage(data){
 				alert("자동화 봇 방지를 위한 캡챠 인증에 실패했습니다. 메인 화면에서 다시 시도해 주세요.");
 				break;
 			}
-			alert("[#" + data.code + "] " + L['error_'+data.code] + i);
+			inAlert(false, 120, "[#" + data.code + "] " + L['error_'+data.code] + i, L['ok']);
 			break;
 		default:
 			break;
@@ -643,7 +685,7 @@ function processRoom(data){
 		$target = $data.users[data.target];
 		if(data.kickVote){
 			notice(getKickText($target.profile, data.kickVote));
-			if($target.id == data.id) alert(L['hasKicked']);
+			if($target.id == data.id) inAlert(false, 100, L['hasKicked'], L['ok'])
 		}
 		if(data.room.players.indexOf($data.id) == -1){
 			if($data.room) if($data.room.gaming){
@@ -1147,7 +1189,7 @@ function onMasterSubJamsu(){
 	notice(L['subJamsu']);
 	$data._jamsu = addTimeout(function(){
 		send('leave');
-		alert(L['masterJamsu']);
+		inAlert(false, 100, L['masterJamsu'], L['ok'])
 	}, 30000);
 }
 function updateScore(id, score){
@@ -1233,6 +1275,7 @@ function drawMyDress(avGroup){
 	renderMoremi($view, my.equip);
 	$(".dress-type.selected").removeClass("selected");
 	$("#dress-type-all").addClass("selected");
+	$("#dress-nickname").val(my.data.nickname);
 	$("#dress-exordial").val(my.exordial);
 	drawMyGoods(avGroup || true);
 }
@@ -1286,37 +1329,41 @@ function drawMyGoods(avGroup){
 		var $target = $(e.currentTarget);
 		var id = $target.attr('id').slice(6);
 		var item = iGoods(id);
-		var isLeft;
 		
 		if(e.ctrlKey){
 			if($target.hasClass("dress-equipped")) return fail(426);
-			if(!confirm(L['surePayback'] + commify(Math.round((item.cost || 0) * 0.2)) + L['ping'])) return;
-			$.post("/payback/" + id, function(res){
-				if(res.error) return fail(res.error);
-				alert(L['painback']);
-				$data.box = res.box;
-				$data.users[$data.id].money = res.money;
-				
-				drawMyDress($data._avGroup);
-				updateUI(false);
+			inAlert(true, 100, L['surePayback'] + commify(Math.round((item.cost || 0) * 0.2)) + L['ping'], L['ok'], L['no'], function(res) {
+				if(res === 'no') return;
+				$.post("/payback/" + id, function(res){
+					if(res.error) return fail(res.error);
+					inAlert(false, 100, L['painback'], L['ok'])
+					$data.box = res.box;
+					$data.users[$data.id].money = res.money;
+					
+					drawMyDress($data._avGroup);
+					updateUI(false);
+				});
 			});
 		}else if(AVAIL_EQUIP.indexOf(item.group) != -1){
 			if(item.group == "Mhand"){
-				isLeft = confirm(L['dressWhichHand']);
-			}
-			requestEquip(id, isLeft);
+				inAlert(true, 100, L['dressWhichHand'], L['right'], L['left'], function(res) {
+					requestEquip(id, res === 'no');
+				});
+			} else requestEquip(id);
 		}else if(item.group == "CNS"){
-			if(!confirm(L['sureConsume'])) return;
-			$.post("/consume/" + id, function(res){
-				if(res.exp) notice(L['obtainExp'] + ": " + commify(res.exp));
-				if(res.money) notice(L['obtainMoney'] + ": " + commify(res.money));
-				res.gain.forEach(function(item){ queueObtain(item); });
-				$data.box = res.box;
-				$data.users[$data.id].data = res.data;
-				send('refresh');
-				
-				drawMyDress($data._avGroup);
-				updateMe();
+			inAlert(true, 100, L['sureConsume'], L['ok'], L['no'], function(res) {
+				if(res === 'no') return;
+				$.post("/consume/" + id, function(res){
+					if(res.exp) notice(L['obtainExp'] + ": " + commify(res.exp));
+					if(res.money) notice(L['obtainMoney'] + ": " + commify(res.money));
+					res.gain.forEach(function(item){ queueObtain(item); });
+					$data.box = res.box;
+					$data.users[$data.id].data = res.data;
+					send('refresh');
+					
+					drawMyDress($data._avGroup);
+					updateMe();
+				});
 			});
 		}
 	});
@@ -1328,7 +1375,8 @@ function requestEquip(id, isLeft){
 	if(part.substr(0, 3) == "BDG") part = "BDG";
 	var already = my.equip[part] == id;
 	
-	if(confirm(L[already ? 'sureUnequip' : 'sureEquip'] + ": " + L[id][0])){
+	inAlert(true, 100, L[already ? 'sureUnequip' : 'sureEquip'] + ": " + L[id][0], L['ok'], L['no'], function(res) {
+		if(res === 'no') return;
 		$.post("/equip/" + id, { isLeft: isLeft }, function(res){
 			if(res.error) return fail(res.error);
 			$data.box = res.box;
@@ -1338,7 +1386,7 @@ function requestEquip(id, isLeft){
 			send('refresh');
 			updateUI(false);
 		});
-	}
+	});
 }
 function drawCharFactory(){
 	var $tray = $("#cf-tray");
@@ -1506,8 +1554,10 @@ function updateCommunity(){
 		var memo = $data.friends[id];
 		
 		if($data._friends[id].server) return fail(455);
-		if(!confirm(memo + "(#" + id.substr(0, 5) + ")\n" + L['friendSureRemove'])) return;
-		send('friendRemove', { id: id }, true);
+		inAlert(true, 100, memo + "(#" + id.substr(0, 5) + ")\n" + L['friendSureRemove'], L['ok'], L['no'], function(res) {
+			if(res === 'no') return;
+			send('friendRemove', { id: id }, true);
+		});
 	}
 	$("#CommunityDiag .dialog-title").html(L['communityText'] + " (" + len + " / 100)");
 }
@@ -1616,9 +1666,11 @@ function requestInvite(id){
 	
 	if(id != "AI"){
 		nick = $data.users[id].profile.title || $data.users[id].profile.name;
-		if(!confirm(nick + L['sureInvite'])) return;
-	}
-	send('invite', { target: id });
+		inAlert(true, 100, nick + L['sureInvite'], L['ok'], L['no'], function(res) {
+			if(res === 'no') return;
+			send('invite', { target: id });
+		});
+	} else send('invite', { target: id });
 }
 function checkFailCombo(id){
 	if(!$data._replay && $data.lastFail == $data.id && $data.id == id){
@@ -2717,7 +2769,7 @@ function chat(profile, msg, from, timestamp){
 	if(link = msg.match(/https?:\/\/[\w\.\?\/&#%=-_\+]+/g)){
 		msg = $msg.html();
 		link.forEach(function(item){
-			msg = msg.replace(item, "<a href='#' style='color: #2222FF;' onclick='if(confirm(\"" + L['linkWarning'] + "\")) window.open(\"" + item + "\");'>" + item + "</a>");
+			msg = msg.replace(item, "<a href='#' style='color: #2222FF;' onclick=goURL(\"" + item + "\")>" + item + "</a>");
 		});
 		$msg.html(msg);
 	}
@@ -2876,7 +2928,7 @@ function setLocation(place){
 	else location.hash = "";
 }
 function fail(code){
-	return alert(L['error_' + code]);
+	inAlert(false, 120, L['error_' + code], L['ok']);
 }
 function yell(msg){
 	$stage.yell.show().css('opacity', 1).html(msg);
