@@ -2602,7 +2602,7 @@ function playSound(key, loop){
 	sound = $sound[key] || $sound.missing;
 	if(window.hasOwnProperty("AudioBuffer") && sound instanceof AudioBuffer){
 		var gN = audioContext.createGain();
-		gN.gain.value = volume;
+		gN.gain.value = volume || 0.5;
 		gN.connect(audioContext.destination);
 
 		src = audioContext.createBufferSource();
